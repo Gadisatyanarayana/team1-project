@@ -1,0 +1,134 @@
+# ──────────────────────────────────────────────
+#  Python bytecode & build artefacts
+# ──────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ──────────────────────────────────────────────
+#  Archives / zip files
+# ──────────────────────────────────────────────
+*.zip
+*.tar.gz
+*.tar
+
+# ──────────────────────────────────────────────
+#  Virtual / conda environments
+# ──────────────────────────────────────────────
+venv/
+env/
+ENV/
+.venv/
+.conda/
+conda-meta/
+
+# ──────────────────────────────────────────────
+#  IDE & editor files
+# ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ──────────────────────────────────────────────
+#  Logs & temporary output
+# ──────────────────────────────────────────────
+logs/
+*.log
+*.log.*
+
+# ──────────────────────────────────────────────
+#  Dataset / large data files
+#  (hindi_santali_final.csv IS committed — only
+#   temporary / generated CSV files are excluded)
+# ──────────────────────────────────────────────
+data/
+*.tmp.csv
+*.bak.csv
+*.generated.csv
+
+# ──────────────────────────────────────────────
+#  Test / coverage artefacts
+# ──────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# ──────────────────────────────────────────────
+#  Environment & secrets
+# ──────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.secret
+secrets.json
+config_local.py
+
+# ──────────────────────────────────────────────
+#  One-off helper / generator scripts
+# ──────────────────────────────────────────────
+_gen.py
+_regen.py
+_write_ui.py
+_*.py
+
+# ──────────────────────────────────────────────
+#  Flask / Werkzeug instance folders
+# ──────────────────────────────────────────────
+instance/
+.webassets-cache
+
+# ──────────────────────────────────────────────
+#  Jupyter / IPython
+# ──────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ──────────────────────────────────────────────
+#  OS & system junk
+# ──────────────────────────────────────────────
+desktop.ini
+ehthumbs.db
+[Tt]humbs.db
+*.lnk
+
+# ──────────────────────────────────────────────
+#  Package-manager lock files (optional – remove
+#  these lines if you want to commit lock files)
+# ──────────────────────────────────────────────
+# Pipfile.lock
+# poetry.lock
+
+# ──────────────────────────────────────────────
+#  Misc
+# ──────────────────────────────────────────────
+*.orig
+*.rej
+*.bak
+temp/
+tmp/
