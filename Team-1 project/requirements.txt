@@ -1,7 +1,13 @@
+# Core web framework
 Flask==3.1.2
 Flask-CORS==6.0.0
+
+# HTTP / utilities
 requests==2.31.0
 python-dotenv==1.0.0
+
+# Text-to-Speech (audio endpoint)
 gTTS==2.3.2
-nltk==3.8.1
+
+# Production WSGI server (local / Docker; not used by Vercel)
 gunicorn==21.2.0

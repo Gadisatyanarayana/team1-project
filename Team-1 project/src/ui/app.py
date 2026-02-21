@@ -15,9 +15,12 @@ from translator.engine import TranslationEngine
 
 def create_app(config=None):
     """Create and configure Flask application"""
-    app = Flask(__name__, 
-                template_folder='templates',
-                static_folder='static')
+    # Use absolute paths so templates & static files resolve correctly both
+    # locally and on Vercel's serverless filesystem.
+    _here = os.path.dirname(os.path.abspath(__file__))
+    app = Flask(__name__,
+                template_folder=os.path.join(_here, 'templates'),
+                static_folder=None)   # no separate static dir; everything inline
     
     CORS(app)
     app.config['TEMPLATES_AUTO_RELOAD'] = True
