@@ -726,43 +726,110 @@
 
   /* ── AUDIO ────────────────────────── */
   function toggleRec() { isRec ? stopRec() : startRec(); }
-  function startRec() {
+
+  /* Friendly error messages for every SpeechRecognition error code */
+  const SR_ERRORS = {
+    'network':          'Network error — speech recognition needs HTTPS or a live internet connection. On a local (HTTP) server, try Chrome with flag chrome://flags/#unsafely-treat-insecure-origin-as-secure, or just deploy to Vercel (HTTPS) where it works automatically.',
+    'not-allowed':      'Microphone access denied. Click the 🔒 icon in Chrome\'s address bar and allow the microphone, then refresh.',
+    'permission-denied':'Microphone access denied. Allow microphone in browser settings.',
+    'no-speech':        'No speech detected. Make sure your microphone is on and speak clearly.',
+    'audio-capture':    'No microphone found. Check that a mic is connected and not used by another app.',
+    'aborted':          'Recording was cancelled.',
+    'service-not-allowed': 'Speech service not allowed. Try using HTTPS (e.g., deploy to Vercel).',
+    'bad-grammar':      'Speech recognition grammar error.',
+    'language-not-supported': 'Hindi (hi-IN) not supported in this browser for speech recognition.',
+  };
+
+  async function startRec() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) { st('aSt','Speech recognition not supported. Use Chrome.','err'); return; }
-    recog = new SR(); recog.lang='hi-IN'; recog.interimResults=true;
+    if (!SR) {
+      st('aSt','Speech recognition not supported. Use Google Chrome on desktop.','err');
+      return;
+    }
+
+    /* ── Check HTTPS / localhost ───────────────────────────────────────────
+       Chrome's Web Speech API only works on:
+         • https:// pages
+         • http://localhost or http://127.0.0.1                                */
+    const isSecure = location.protocol === 'https:' ||
+                     location.hostname === 'localhost' ||
+                     location.hostname === '127.0.0.1';
+    if (!isSecure) {
+      st('aSt',
+        'Microphone requires HTTPS. Open the app on localhost (http://localhost:5000) or deploy to Vercel where HTTPS is automatic.',
+        'err');
+      return;
+    }
+
+    /* ── Pre-check microphone permission ──────────────────────────────────── */
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch(permErr) {
+      const msg = permErr.name === 'NotAllowedError'
+        ? 'Microphone access denied. Click the 🔒 icon in the Chrome address bar, set Microphone to "Allow", then refresh the page.'
+        : 'Could not access microphone: ' + permErr.message;
+      st('aSt', msg, 'err');
+      return;
+    }
+
+    recog = new SR();
+    recog.lang = 'hi-IN';
+    recog.interimResults = true;
+    recog.maxAlternatives = 1;
+
     recog.onstart = () => {
       isRec=true;
       document.getElementById('micRing').classList.add('rec');
       document.getElementById('recBtn').innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg> Stop Recording';
       document.getElementById('recBtn').classList.add('stop');
-      st('aSt','Listening...');
+      st('aSt','Listening… speak in Hindi');
     };
-    recog.onresult = e => { const t=Array.from(e.results).map(r=>r[0].transcript).join(''); const el=document.getElementById('aRec'); el.textContent=t; el.className='otext'; };
+
+    recog.onresult = e => {
+      const t = Array.from(e.results).map(r=>r[0].transcript).join('');
+      const el = document.getElementById('aRec');
+      el.textContent = t;
+      el.className = 'otext';
+    };
+
     recog.onend = async () => {
-      isRec=false; document.getElementById('micRing').classList.remove('rec');
+      isRec=false;
+      document.getElementById('micRing').classList.remove('rec');
       document.getElementById('recBtn').innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/></svg> Start Recording';
       document.getElementById('recBtn').classList.remove('stop');
-      const spoken=document.getElementById('aRec').textContent;
-      if (!spoken||spoken==='Your speech will appear here...') { st('aSt','No speech detected.','err'); return; }
-      st('aSt','Translating...');
+      const spoken = document.getElementById('aRec').textContent;
+      if (!spoken || spoken === 'Your speech will appear here...') {
+        st('aSt','No speech detected. Speak louder or move closer to the mic.','err');
+        return;
+      }
+      st('aSt','Translating…');
       try {
         const info = DIR_LABELS[dirs.audio] || DIR_LABELS['hi-sat'];
-        const r=await fetch('/api/translate',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({text:spoken, source_lang: info.src, target_lang: info.tgt})});
-        const d=await r.json();
-        if (d.success&&d.translated_text) {
-          const out=document.getElementById('aOut'); out.textContent=d.translated_text; out.className='otext';
+        const r = await fetch('/api/translate', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({text:spoken, source_lang:info.src, target_lang:info.tgt})
+        });
+        const d = await r.json();
+        if (d.success && d.translated_text) {
+          const out = document.getElementById('aOut');
+          out.textContent = d.translated_text;
+          out.className = 'otext';
           document.getElementById('aSpk').classList.remove('hidden');
           st('aSt','Done! Confidence: '+(d.confidence||0).toFixed(0)+'%','ok');
-        } else st('aSt',d.error||'Translation failed.','err');
-      } catch(e) { st('aSt','Connection error.','err'); }
+        } else { st('aSt', d.error||'Translation failed.', 'err'); }
+      } catch(err) { st('aSt','Connection error — is the server running?','err'); }
     };
+
     recog.onerror = e => {
-      isRec=false; document.getElementById('micRing').classList.remove('rec');
+      isRec=false;
+      document.getElementById('micRing').classList.remove('rec');
       document.getElementById('recBtn').classList.remove('stop');
       document.getElementById('recBtn').innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/></svg> Start Recording';
-      st('aSt','Mic error: '+e.error,'err');
+      const friendly = SR_ERRORS[e.error] || ('Speech error: ' + e.error);
+      st('aSt', friendly, 'err');
     };
+
     recog.start();
   }
   function stopRec() { if(recog) recog.stop(); }
