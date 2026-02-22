@@ -115,12 +115,96 @@
     html, body { height:100%; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',Roboto,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
 
     body {
-      background: var(--bg);
+      background: linear-gradient(135deg, #0d1117 0%, #111420 50%, #0a0d14 100%);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: flex-start;
       transition: background .5s ease;
+    }
+    [data-theme="light"] body { background: #e8f4ff; }
+
+    /* ── DARK: wavy canvas (Aceternity WavyBackground) ── */
+    #wavy-bg-canvas {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+      opacity: 1;
+      transition: opacity .5s ease;
+    }
+    [data-theme="light"] #wavy-bg-canvas { opacity: 0; }
+
+    /* ── LIGHT: BACKGROUND GRADIENT ANIMATION (Aceternity port) ── */
+    #light-gradient-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      background: linear-gradient(120deg, #bfdbfe 0%, #d1fae5 45%, #ede9fe 100%);
+      opacity: 0;
+      transition: opacity .5s ease;
+    }
+    [data-theme="light"] #light-gradient-bg { opacity: 1; }
+
+    @keyframes lgMoveInCircle {
+      0%   { transform: rotate(0deg);   }
+      50%  { transform: rotate(180deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes lgMoveVertical {
+      0%   { transform: translateY(-40%); }
+      50%  { transform: translateY(40%);  }
+      100% { transform: translateY(-40%); }
+    }
+    @keyframes lgMoveHorizontal {
+      0%   { transform: translateX(-40%) translateY(-10%); }
+      50%  { transform: translateX(40%)  translateY(10%);  }
+      100% { transform: translateX(-40%) translateY(-10%); }
+    }
+
+    #light-gradient-bg .lg-blob {
+      position: absolute;
+      border-radius: 50%;
+      mix-blend-mode: multiply;
+      filter: blur(35px);
+      opacity: 0.85;
+    }
+    #light-gradient-bg .lb1 {
+      width: 70%; height: 70%; top: 5%; left: 5%;
+      background: radial-gradient(circle at center, #22d3ee 0%, #06b6d4 50%, transparent 75%);
+      animation: lgMoveInCircle 13s linear infinite;
+      transform-origin: 60% 40%;
+    }
+    #light-gradient-bg .lb2 {
+      width: 60%; height: 60%; top: 20%; left: 25%;
+      background: radial-gradient(circle at center, #818cf8 0%, #6366f1 50%, transparent 75%);
+      animation: lgMoveVertical 11s ease infinite alternate;
+    }
+    #light-gradient-bg .lb3 {
+      width: 70%; height: 70%; top: -10%; left: -10%;
+      background: radial-gradient(circle at center, #34d399 0%, #10b981 50%, transparent 75%);
+      animation: lgMoveHorizontal 15s ease infinite;
+      opacity: 0.75;
+    }
+    #light-gradient-bg .lb4 {
+      width: 55%; height: 55%; top: 48%; left: 45%;
+      background: radial-gradient(circle at center, #f472b6 0%, #ec4899 50%, transparent 75%);
+      animation: lgMoveInCircle 9s linear infinite reverse;
+      transform-origin: 40% 60%;
+      opacity: 0.80;
+    }
+    #light-gradient-bg .lb5 {
+      width: 50%; height: 50%; bottom: -5%; right: -5%;
+      background: radial-gradient(circle at center, #4ade80 0%, #22c55e 50%, transparent 75%);
+      animation: lgMoveInCircle 18s linear infinite;
+      opacity: 0.70;
+    }
+
+    .screen {
+      position: relative;
+      z-index: 1;
     }
 
     .screen {
@@ -336,11 +420,36 @@
       background:var(--mic-bg); border:2px solid var(--mic-border);
       display:flex; align-items:center; justify-content:center;
       transition:border-color .3s, box-shadow .3s, background .5s;
+      position: relative;  /* needed for ripple rings */
     }
-    .mic-ring.rec { border-color:var(--accent2); animation:pr 1.4s ease-in-out infinite; }
-    @keyframes pr {
-      0%,100% { box-shadow:0 0 0 5px var(--pr1), 0 0 0 12px var(--pr2); }
-      50%      { box-shadow:0 0 0 12px var(--pr3), 0 0 0 24px var(--pr4); }
+
+    /* ── VOICE-ASSISTANT RIPPLE RINGS ──
+       3 rings scale out + fade when .rec is active */
+    .vw {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid var(--accent2);
+      opacity: 0;
+      pointer-events: none;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .mic-ring.rec .vw {
+      animation: voiceRipple 1.8s ease-out infinite;
+    }
+    .mic-ring.rec .vw1 { width: 86px;  height: 86px;  animation-delay: 0s;    }
+    .mic-ring.rec .vw2 { width: 86px;  height: 86px;  animation-delay: 0.5s;  }
+    .mic-ring.rec .vw3 { width: 86px;  height: 86px;  animation-delay: 1.0s;  }
+
+    @keyframes voiceRipple {
+      0%   { transform: translate(-50%,-50%) scale(1.0); opacity: 0.85; border-width: 2px; }
+      100% { transform: translate(-50%,-50%) scale(2.6); opacity: 0;    border-width: 1px; }
+    }
+
+    /* When recording, glow the mic ring itself */
+    .mic-ring.rec {
+      border-color: var(--accent2);
+      box-shadow: 0 0 0 4px var(--pr1), 0 0 18px var(--accent-glow);
     }
     .mic-ring svg { width:32px; height:32px; fill:none; stroke:var(--accent2); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; transition:stroke .5s; }
     .mic-hint { font-size:12.5px; color:var(--text-lo); text-align:center; transition:color .5s; }
@@ -361,6 +470,28 @@
     .bsrc  { font-size:11.5px; color:var(--bsrc-cl); margin-bottom:3px; transition:color .5s; }
     .btgt  { font-size:13.5px; color:var(--text-hi); font-weight:500; transition:color .5s; }
     .bresults { max-height:260px; overflow-y:auto; margin-top:4px; }
+
+    /* ── TYPEWRITER OUTPUT ANIMATION ───────────────────────── */
+    @keyframes twBlink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+    @keyframes twPop {
+      0%   { opacity: 0; transform: scale(0.97) translateY(4px); }
+      60%  { transform: scale(1.01) translateY(-1px); }
+      100% { opacity: 1; transform: scale(1)   translateY(0);   }
+    }
+    .otext.typing {
+      animation: twPop 0.25s ease forwards;
+    }
+    .otext.typing::after {
+      content: '|';
+      margin-left: 2px;
+      animation: twBlink 0.65s step-end infinite;
+      color: var(--accent);
+      font-weight: 300;
+      opacity: 1;
+    }
 
     .bottom-bar { padding:0 20px 24px; text-align:center; }
     .bottom-bar p { font-size:10.5px; color:var(--text-lo); transition:color .5s; }
@@ -421,9 +552,17 @@
       margin-top:8px; display:none; line-height:1.9; transition:background .5s;
     }
     .tl-btn.tl-on ~ .tl-cheatsheet { display:block; }
-  </style>
+</style>
 </head>
 <body>
+<canvas id="wavy-bg-canvas" aria-hidden="true"></canvas>
+<div id="light-gradient-bg" aria-hidden="true">
+  <div class="lg-blob lb1"></div>
+  <div class="lg-blob lb2"></div>
+  <div class="lg-blob lb3"></div>
+  <div class="lg-blob lb4"></div>
+  <div class="lg-blob lb5"></div>
+</div>
 <div class="screen">
 
   <div class="nav-shell">
@@ -450,12 +589,12 @@
         </div>
       </div>
       <div class="header-right">
-        <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle light / dark">
+        <button type="button" class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle light / dark">
           <svg id="themeIcon" viewBox="0 0 24 24">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
           </svg>
         </button>
-        <button class="menu-btn" id="menuBtn" onclick="toggleMenu()">
+        <button type="button" class="menu-btn" id="menuBtn" onclick="toggleMenu()">
           <span>Menu</span>
           <svg class="chev" id="chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
@@ -540,7 +679,7 @@
         <textarea id="tIn" rows="4" maxlength="500" placeholder="Type Hindi text here..." oninput="document.getElementById('tCC').textContent=this.value.length"></textarea>
         <div class="cc"><span id="tCC">0</span>/500</div>
         <div class="tl-bar">
-          <button class="tl-btn" id="translitBtn" onclick="toggleTranslit()">
+          <button type="button" class="tl-btn" id="translitBtn" onclick="toggleTranslit()">
             <span class="tl-dot"></span>
             <span class="tl-lbl">&#2361;&#2367;&#2306;</span>
           </button>
@@ -554,7 +693,7 @@
         </div>
       </div>
 
-      <button class="tr-btn" id="tBtn" onclick="doTranslate()">
+      <button type="button" class="tr-btn" id="tBtn" onclick="doTranslate()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         Translate
       </button>
@@ -563,7 +702,7 @@
         <div class="otext ph2" id="tOut">Translation will appear here...</div>
         <div class="conf-bar" id="tConfBar" style="display:none"><div class="conf-fill" id="tConfFill" style="width:0%"></div></div>
         <div class="conf-label" id="tConfLabel"></div>
-        <button class="spk-btn hidden" id="tSpk" onclick="speakTOut()">
+        <button type="button" class="spk-btn hidden" id="tSpk" onclick="speakTOut()">
           <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
           Listen
         </button>
@@ -579,6 +718,9 @@
       </div>
       <div class="mic-area">
         <div class="mic-ring" id="micRing">
+          <div class="vw vw1"></div>
+          <div class="vw vw2"></div>
+          <div class="vw vw3"></div>
           <svg viewBox="0 0 24 24">
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
             <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
@@ -586,7 +728,7 @@
           </svg>
         </div>
         <p class="mic-hint" id="mHint">Press the button below and speak in Hindi</p>
-        <button class="rec-btn" id="recBtn" onclick="toggleRec()">
+        <button type="button" class="rec-btn" id="recBtn" onclick="toggleRec()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/></svg>
           Start Recording
         </button>
@@ -597,7 +739,7 @@
         <div class="divider"></div>
         <div class="olabel">Translation</div>
         <div class="otext ph2" id="aOut">Translation will appear here...</div>
-        <button class="spk-btn hidden" id="aSpk" onclick="speakText(document.getElementById('aOut').textContent,'sat')">
+        <button type="button" class="spk-btn hidden" id="aSpk" onclick="speakText(document.getElementById('aOut').textContent,'sat','aSt')">
           <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
           Listen
         </button>
@@ -615,7 +757,7 @@
       <div class="card">
         <textarea id="bIn" rows="6" placeholder="Line 1&#10;Line 2&#10;Line 3..."></textarea>
       </div>
-      <button class="tr-btn" id="bBtn" onclick="doBatch()">
+      <button type="button" class="tr-btn" id="bBtn" onclick="doBatch()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         Translate All
       </button>
@@ -650,7 +792,7 @@
   /* ── MENU ─────────────────────────── */
   let menuOpen = false;
   const dirs = { text:'hi-sat', audio:'hi-sat', batch:'hi-sat' };
-  let isRec = false, recog = null;
+  let isRec = false;
 
   function toggleMenu() {
     menuOpen = !menuOpen;
@@ -699,7 +841,30 @@
     const dir = dirs.text;
     // speak in target lang: sat for hi-sat, hi for sat-hi/hi-en
     const lang = dir === 'hi-sat' ? 'sat' : 'hi';
-    speakText(txt, lang);
+    speakText(txt, lang, 'tSt');
+  }
+
+  /* ── TYPEWRITER helper — Devanagari-safe (splits on grapheme clusters) ── */
+  function typewriter(el, text, speed) {
+    speed = speed || 38;
+    el.textContent = '';
+    el.className = 'otext typing';
+    let segs;
+    try {
+      segs = [...new Intl.Segmenter().segment(text)].map(s => s.segment);
+    } catch(_) {
+      segs = [...text];
+    }
+    let i = 0;
+    function tick() {
+      if (i < segs.length) {
+        el.textContent += segs[i++];
+        setTimeout(tick, speed);
+      } else {
+        el.classList.remove('typing');
+      }
+    }
+    tick();
   }
 
   async function doTranslate() {
@@ -714,7 +879,7 @@
       const d = await r.json();
       if (d.success && d.translated_text) {
         const out=document.getElementById('tOut');
-        out.textContent=d.translated_text; out.className='otext';
+        typewriter(out, d.translated_text);
         document.getElementById('tSpk').classList.remove('hidden');
         // show confidence
         const conf = d.confidence || 0;
@@ -735,115 +900,193 @@
     }
   }
 
-  /* ── AUDIO ────────────────────────── */
+  /* ── AUDIO — Server-side recording (works without Chrome Web Speech API) ── */
+
+  // Audio context and recording state
+  let audioCtx = null, mediaStream = null, scriptNode = null, sourceNode = null;
+  let pcmSamples = [];   // raw Float32 samples accumulated during recording
+  const SAMPLE_RATE = 16000;  // 16 kHz mono — ideal for speech recognition
+  // Silence-detection state (auto-stop after speech ends)
+  let speechDetected = false, silenceStart = null, maxRecTimer = null;
+  const SILENCE_THRESHOLD = 0.008;  // RMS below this = silence
+  const SILENCE_DURATION  = 1800;   // ms of silence after speech → auto-stop
+  const MAX_REC_DURATION  = 30000;  // absolute 30-second safety cap
+
   function toggleRec() { isRec ? stopRec() : startRec(); }
 
-  /* Friendly error messages for every SpeechRecognition error code */
-  const SR_ERRORS = {
-    'network':          'Network error — speech recognition needs HTTPS or a live internet connection. On a local (HTTP) server, try Chrome with flag chrome://flags/#unsafely-treat-insecure-origin-as-secure, or just deploy to Vercel (HTTPS) where it works automatically.',
-    'not-allowed':      'Microphone access denied. Click the 🔒 icon in Chrome\'s address bar and allow the microphone, then refresh.',
-    'permission-denied':'Microphone access denied. Allow microphone in browser settings.',
-    'no-speech':        'No speech detected. Make sure your microphone is on and speak clearly.',
-    'audio-capture':    'No microphone found. Check that a mic is connected and not used by another app.',
-    'aborted':          'Recording was cancelled.',
-    'service-not-allowed': 'Speech service not allowed. Try using HTTPS (e.g., deploy to Vercel).',
-    'bad-grammar':      'Speech recognition grammar error.',
-    'language-not-supported': 'Hindi (hi-IN) not supported in this browser for speech recognition.',
-  };
+  function _resetRecBtn() {
+    document.getElementById('micRing').classList.remove('rec');
+    document.getElementById('recBtn').classList.remove('stop');
+    document.getElementById('recBtn').innerHTML =
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Start Recording';
+    isRec = false;
+  }
+
+  /* Encode accumulated Float32 PCM samples into a standard 16-bit WAV Blob */
+  function _encodeWAV(samples) {
+    const buf  = new ArrayBuffer(44 + samples.length * 2);
+    const view = new DataView(buf);
+    const ws   = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
+    ws(0,  'RIFF');  view.setUint32(4,  36 + samples.length * 2, true);
+    ws(8,  'WAVE');  ws(12, 'fmt ');
+    view.setUint32(16, 16,            true);  // subchunk size (PCM)
+    view.setUint16(20, 1,             true);  // format: PCM
+    view.setUint16(22, 1,             true);  // channels: mono
+    view.setUint32(24, SAMPLE_RATE,   true);  // sample rate
+    view.setUint32(28, SAMPLE_RATE*2, true);  // byte rate
+    view.setUint16(32, 2,             true);  // block align
+    view.setUint16(34, 16,            true);  // bits per sample
+    ws(36, 'data');  view.setUint32(40, samples.length * 2, true);
+    let off = 44;
+    for (let i = 0; i < samples.length; i++, off += 2) {
+      const s = Math.max(-1, Math.min(1, samples[i]));
+      view.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+    return new Blob([buf], { type: 'audio/wav' });
+  }
 
   async function startRec() {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) {
-      st('aSt','Speech recognition not supported. Use Google Chrome on desktop.','err');
-      return;
-    }
+    if (isRec) return;
 
-    /* ── Check HTTPS / localhost ───────────────────────────────────────────
-       Chrome's Web Speech API only works on:
-         • https:// pages
-         • http://localhost or http://127.0.0.1                                */
-    const isSecure = location.protocol === 'https:' ||
-                     location.hostname === 'localhost' ||
-                     location.hostname === '127.0.0.1';
-    if (!isSecure) {
-      st('aSt',
-        'Microphone requires HTTPS. Open the app on localhost (http://localhost:5000) or deploy to Vercel where HTTPS is automatic.',
-        'err');
-      return;
-    }
-
-    /* ── Pre-check microphone permission ──────────────────────────────────── */
+    /* ── Request microphone access ─────────────────────────────────────── */
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch(permErr) {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    } catch (permErr) {
       const msg = permErr.name === 'NotAllowedError'
-        ? 'Microphone access denied. Click the 🔒 icon in the Chrome address bar, set Microphone to "Allow", then refresh the page.'
+        ? 'Microphone access denied. Click the 🔒 icon in your browser address bar, set Microphone to "Allow", then refresh.'
         : 'Could not access microphone: ' + permErr.message;
       st('aSt', msg, 'err');
       return;
     }
 
-    recog = new SR();
-    recog.lang = 'hi-IN';
-    recog.interimResults = true;
-    recog.maxAlternatives = 1;
+    /* ── Set up AudioContext for raw PCM capture ───────────────────────── */
+    pcmSamples = [];
+    speechDetected = false;
+    silenceStart   = null;
+    audioCtx   = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SAMPLE_RATE });
+    sourceNode = audioCtx.createMediaStreamSource(mediaStream);
+    // ScriptProcessor: 4096 samples per chunk, mono in, mono out
+    scriptNode = audioCtx.createScriptProcessor(4096, 1, 1);
+    scriptNode.onaudioprocess = e => {
+      if (!isRec) return;
+      // Copy channel data so the buffer isn't recycled
+      const chunk = e.inputBuffer.getChannelData(0);
+      pcmSamples.push(new Float32Array(chunk));
 
-    recog.onstart = () => {
-      isRec=true;
-      document.getElementById('micRing').classList.add('rec');
-      document.getElementById('recBtn').innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg> Stop Recording';
-      document.getElementById('recBtn').classList.add('stop');
-      st('aSt','Listening… speak in Hindi');
+      // ── Silence detection: auto-stop after speech then silence ───────────
+      let sum = 0;
+      for (let i = 0; i < chunk.length; i++) sum += chunk[i] * chunk[i];
+      const rms = Math.sqrt(sum / chunk.length);
+
+      if (rms > SILENCE_THRESHOLD) {
+        // Active speech detected
+        if (!speechDetected) {
+          speechDetected = true;
+          st('aSt', '🎙 Listening… (will auto-stop when you finish speaking)');
+        }
+        silenceStart = null;  // reset silence timer
+      } else if (speechDetected) {
+        // Silence after speech — start/check timer
+        if (silenceStart === null) {
+          silenceStart = Date.now();
+        } else if (Date.now() - silenceStart >= SILENCE_DURATION) {
+          st('aSt', '🔇 Silence detected — processing…');
+          stopRec();
+        }
+      }
     };
+    sourceNode.connect(scriptNode);
+    scriptNode.connect(audioCtx.destination);  // must be connected to fire onaudioprocess
 
-    recog.onresult = e => {
-      const t = Array.from(e.results).map(r=>r[0].transcript).join('');
-      const el = document.getElementById('aRec');
-      el.textContent = t;
-      el.className = 'otext';
-    };
+    // Safety cap: auto-stop if recording runs too long
+    maxRecTimer = setTimeout(() => {
+      if (isRec) { st('aSt', '⏱ Max recording time reached — processing…'); stopRec(); }
+    }, MAX_REC_DURATION);
 
-    recog.onend = async () => {
-      isRec=false;
-      document.getElementById('micRing').classList.remove('rec');
-      document.getElementById('recBtn').innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/></svg> Start Recording';
-      document.getElementById('recBtn').classList.remove('stop');
-      const spoken = document.getElementById('aRec').textContent;
-      if (!spoken || spoken === 'Your speech will appear here...') {
-        st('aSt','No speech detected. Speak louder or move closer to the mic.','err');
+    isRec = true;
+    document.getElementById('micRing').classList.add('rec');
+    document.getElementById('recBtn').innerHTML =
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg> Stop Recording';
+    document.getElementById('recBtn').classList.add('stop');
+    st('aSt', '🎙 Recording… speak clearly in Hindi (mic stops automatically after you finish)');
+  }
+
+  async function stopRec() {
+    if (!isRec) return;
+    isRec = false;
+
+    // Clear auto-stop timers
+    if (maxRecTimer) { clearTimeout(maxRecTimer); maxRecTimer = null; }
+    speechDetected = false; silenceStart = null;
+
+    /* ── Tear down audio pipeline ──────────────────────────────────────── */
+    try { scriptNode.disconnect(); sourceNode.disconnect(); } catch(_) {}
+    try { mediaStream.getTracks().forEach(t => t.stop()); } catch(_) {}
+    try { audioCtx.close(); } catch(_) {}
+    _resetRecBtn();
+
+    /* ── Flatten PCM chunks into one Float32Array ──────────────────────── */
+    const totalLen = pcmSamples.reduce((s, c) => s + c.length, 0);
+    if (totalLen < SAMPLE_RATE * 0.3) {   // less than ~0.3 seconds
+      st('aSt', 'Recording too short — hold the button for at least 1 second while speaking.', 'err');
+      return;
+    }
+    const flat = new Float32Array(totalLen);
+    let pos = 0;
+    for (const chunk of pcmSamples) { flat.set(chunk, pos); pos += chunk.length; }
+
+    /* ── Encode to WAV and send to server ──────────────────────────────── */
+    st('aSt', '⏳ Processing speech…');
+    const wavBlob = _encodeWAV(flat);
+    const form    = new FormData();
+    form.append('audio', wavBlob, 'speech.wav');
+
+    let transcribed = '';
+    try {
+      const r = await fetch('/api/transcribe', { method: 'POST', body: form });
+      const d = await r.json();
+      if (!d.success) {
+        st('aSt', '⚠ ' + (d.error || 'Transcription failed.'), 'err');
         return;
       }
-      st('aSt','Translating…');
-      try {
-        const info = DIR_LABELS[dirs.audio] || DIR_LABELS['hi-sat'];
-        const r = await fetch('/api/translate', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({text:spoken, source_lang:info.src, target_lang:info.tgt})
-        });
-        const d = await r.json();
-        if (d.success && d.translated_text) {
-          const out = document.getElementById('aOut');
-          out.textContent = d.translated_text;
-          out.className = 'otext';
-          document.getElementById('aSpk').classList.remove('hidden');
-          st('aSt','Done! Confidence: '+(d.confidence||0).toFixed(0)+'%','ok');
-        } else { st('aSt', d.error||'Translation failed.', 'err'); }
-      } catch(err) { st('aSt','Connection error — is the server running?','err'); }
-    };
+      transcribed = d.text.trim();
+    } catch (e) {
+      st('aSt', 'Connection error — is the server running?', 'err');
+      return;
+    }
 
-    recog.onerror = e => {
-      isRec=false;
-      document.getElementById('micRing').classList.remove('rec');
-      document.getElementById('recBtn').classList.remove('stop');
-      document.getElementById('recBtn').innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/></svg> Start Recording';
-      const friendly = SR_ERRORS[e.error] || ('Speech error: ' + e.error);
-      st('aSt', friendly, 'err');
-    };
+    if (!transcribed) {
+      st('aSt', 'No speech detected — try speaking more clearly and closer to the mic.', 'err');
+      return;
+    }
 
-    recog.start();
+    /* ── Show what was heard ───────────────────────────────────────────── */
+    const recEl = document.getElementById('aRec');
+    recEl.textContent = transcribed;
+    recEl.className   = 'otext';
+
+    /* ── Auto-translate ────────────────────────────────────────────────── */
+    st('aSt', 'Translating…');
+    try {
+      const info = DIR_LABELS[dirs.audio] || DIR_LABELS['hi-sat'];
+      const r2   = await fetch('/api/translate', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ text: transcribed, source_lang: info.src, target_lang: info.tgt })
+      });
+      const d2 = await r2.json();
+      if (d2.success && d2.translated_text) {
+        const out = document.getElementById('aOut');
+        typewriter(out, d2.translated_text);
+        document.getElementById('aSpk').classList.remove('hidden');
+        st('aSt', '✓ Done! Confidence: ' + (d2.confidence || 0).toFixed(0) + '%', 'ok');
+      } else {
+        st('aSt', d2.error || 'Translation failed.', 'err');
+      }
+    } catch (err) {
+      st('aSt', 'Translation error: ' + err.message, 'err');
+    }
   }
-  function stopRec() { if(recog) recog.stop(); }
 
   /* ── BATCH ────────────────────────── */
   async function doBatch() {
@@ -874,13 +1117,55 @@
   }
 
   /* ── TTS ──────────────────────────── */
-  async function speakText(text, lang) {
-    if (!text||text.includes('will appear here')) return;
+  async function speakText(text, lang, statusId) {
+    if (!text || text.includes('will appear here')) return;
+    if (statusId) st(statusId, '🔊 Loading audio…');
+    let objectUrl = null;
     try {
-      const r=await fetch('/api/speak',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,language:lang})});
-      if (!r.ok) return;
-      new Audio(URL.createObjectURL(await r.blob())).play();
-    } catch(e) { console.warn('TTS:',e); }
+      const r = await fetch('/api/speak', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({text, language: lang})
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({error: 'Server error ' + r.status}));
+        const errMsg = err.error || ('Server error ' + r.status);
+        console.warn('[TTS] Server error:', errMsg);
+        if (statusId) st(statusId, '⚠ Audio error: ' + errMsg, 'err');
+        return;
+      }
+      const contentType = r.headers.get('Content-Type') || 'audio/mpeg';
+      const blob = await r.blob();
+      if (!blob || blob.size < 10) {
+        if (statusId) st(statusId, '⚠ Audio not available (TTS engine unavailable).', 'err');
+        return;
+      }
+      const typedBlob = new Blob([blob], {type: contentType});
+      objectUrl = URL.createObjectURL(typedBlob);
+      const audio = new Audio(objectUrl);
+      if (statusId) st(statusId, '🔊 Playing…', 'ok');
+      audio.onended  = () => {
+        URL.revokeObjectURL(objectUrl); objectUrl = null;
+        if (statusId) st(statusId, '');
+      };
+      audio.onerror  = (ev) => {
+        console.warn('[TTS] Audio playback error:', ev);
+        if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+        if (statusId) st(statusId, '⚠ Could not play audio. Check browser settings.', 'err');
+      };
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(e => {
+          console.warn('[TTS] play() blocked (autoplay policy):', e.message);
+          if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+          if (statusId) st(statusId, '⚠ Click the page first, then try Listen again (browser autoplay blocked).', 'err');
+        });
+      }
+    } catch(e) {
+      console.warn('[TTS] fetch failed:', e);
+      if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+      if (statusId) st(statusId, '⚠ Connection error: ' + e.message, 'err');
+    }
   }
 
   /* ── HINDI PHONETIC TRANSLITERATION ────────────────────── */
@@ -993,6 +1278,8 @@
 
   function translitKeydown(e) {
     if (!translitOn) return;
+    // Allow browser shortcuts (Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+Z, etc.)
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
     const key = e.key;
     const ta  = document.getElementById('tIn');
     const cc  = document.getElementById('tCC');
@@ -1064,6 +1351,89 @@
   document.addEventListener('click', e => {
     if (menuOpen && !document.querySelector('.nav-shell').contains(e.target)) closeMenu();
   });
+</script>
+
+<!-- Aceternity WavyBackground — dark theme only, sea-wave style -->
+<script>
+(function () {
+  const canvas = document.getElementById('wavy-bg-canvas');
+  const ctx    = canvas.getContext('2d');
+
+  const COLORS = ['#22d3ee', '#38bdf8', '#818cf8', '#c084fc', '#e879f9'];
+  const SPEED  = 0.0008;
+  const BG     = '#0d1117';
+
+  /* Sea band: waves live in a fixed strip around vertical center */
+  const BAND_HEIGHT = 0.18;   // fraction of canvas height for the whole band
+  const AMP_BASE    = 0.055;  // fraction of canvas height for wave amplitude
+
+  let w, h, raf, lastT = 0, phase = 0;
+
+  function resize() {
+    w = canvas.width  = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+
+  function render(ts) {
+    const dt = ts - lastT; lastT = ts;
+    phase += SPEED * dt;
+
+    /* Dark bg */
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, w, h);
+
+    if (document.documentElement.getAttribute('data-theme') === 'light') {
+      raf = requestAnimationFrame(render);
+      return;
+    }
+
+    const centY  = h * 0.5;
+    const amp    = h * AMP_BASE;
+    const band   = h * BAND_HEIGHT;
+
+    /* ── Single sea surface: layered strokes, not filled shapes ── */
+    ctx.save();
+    /* Clip strictly to the sea band — nothing above or below */
+    ctx.beginPath();
+    ctx.rect(0, centY - band * 0.5, w, band);
+    ctx.clip();
+
+    /* Draw each colour as a thin glowing stroke wave */
+    COLORS.forEach((color, i) => {
+      /* Each layer is offset slightly in Y and phase so they interleave */
+      const layerY     = centY + (i - 2) * (amp * 0.2); // spread ±2 layers
+      const phaseShift = phase + i * 1.1;
+      const freq       = 260 + i * 30;  // slightly different wavelength per layer
+
+      ctx.beginPath();
+      ctx.moveTo(0, layerY);
+      for (let x = 0; x <= w; x += 2) {
+        const y = layerY
+          + Math.sin((x / freq) * Math.PI * 2 + phaseShift)          * amp
+          + Math.sin((x / freq) * Math.PI * 2 * 1.4 + phaseShift * 0.7) * amp * 0.35;
+        ctx.lineTo(x, y);
+      }
+
+      ctx.strokeStyle   = color;
+      ctx.lineWidth     = 2.5;
+      ctx.globalAlpha   = 0.7;
+      ctx.shadowColor   = color;
+      ctx.shadowBlur    = 18;
+      ctx.stroke();
+    });
+
+    ctx.restore();
+    ctx.globalAlpha  = 1;
+    ctx.shadowBlur   = 0;
+
+    raf = requestAnimationFrame(render);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  raf = requestAnimationFrame(render);
+})();
 </script>
 </body>
 </html>

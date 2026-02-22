@@ -122,36 +122,75 @@ def create_app(config=None):
         except Exception as e:
             return jsonify({'error': str(e)}), 500
     
+    # ============ SPEECH-TO-TEXT (TRANSCRIBE) API ============
+
+    @app.route('/api/transcribe', methods=['POST'])
+    def transcribe():
+        """Transcribe uploaded WAV audio to Hindi text using SpeechRecognition."""
+        try:
+            import speech_recognition as sr
+
+            audio_file = request.files.get('audio')
+            if not audio_file:
+                return jsonify({'success': False, 'error': 'No audio file uploaded'}), 400
+
+            recognizer = sr.Recognizer()
+            recognizer.energy_threshold = 300
+            recognizer.dynamic_energy_threshold = True
+
+            with sr.AudioFile(audio_file) as source:
+                audio_data = recognizer.record(source)
+
+            # Try Google Web Speech HTTP API (different endpoint from Chrome's — often works when Chrome fails)
+            try:
+                text = recognizer.recognize_google(audio_data, language='hi-IN')
+                return jsonify({'success': True, 'text': text, 'engine': 'google'})
+            except sr.UnknownValueError:
+                return jsonify({'success': False, 'error': 'Could not understand the audio. Please speak clearly in Hindi.'})
+            except sr.RequestError as e:
+                return jsonify({'success': False, 'error': 'Speech service unavailable: ' + str(e)})
+
+        except ImportError:
+            return jsonify({'success': False, 'error': 'SpeechRecognition not installed. Run: pip install SpeechRecognition'}), 500
+        except Exception as e:
+            import traceback
+            print('[/api/transcribe] Exception:', traceback.format_exc())
+            return jsonify({'success': False, 'error': str(e)}), 500
+
     # ============ TEXT-TO-SPEECH API ============
     
     @app.route('/api/speak', methods=['POST'])
     def speak():
-        """Generate audio for text (Text-to-Speech)"""
+        """Generate audio for text (Text-to-Speech).
+        Returns MP3 (gTTS) or WAV (pyttsx3 / fallback tone) with correct Content-Type.
+        """
         try:
             from translator.audio_gen import generate_speech_audio
-            from translator.olchiki_tts import is_olchiki_text, prepare_text_for_tts
-            
-            data = request.get_json()
+
+            data = request.get_json(force=True, silent=True) or {}
             text = data.get('text', '').strip()
-            language = data.get('language', 'hi')
-            
+            language = str(data.get('language', 'hi')).strip().lower()
+
             if not text:
-                return jsonify({'error': 'Empty text'}), 400
-            
-            # Detect if it's Ol Chiki (Santali) and transliterate for TTS
-            if is_olchiki_text(text):
-                tts_text = prepare_text_for_tts(text)
-                language = 'hi'  # Use Hindi for TTS since we're spelling it out
-            else:
-                tts_text = text
-            
-            audio_data = generate_speech_audio(tts_text, language)
-            
+                return jsonify({'error': 'Empty text provided'}), 400
+
+            # generate_speech_audio now returns (bytes, content_type)
+            audio_data, content_type = generate_speech_audio(text, language)
+
             if not audio_data:
-                return jsonify({'error': 'Failed to generate audio'}), 500
-            
-            return Response(audio_data, mimetype='audio/mpeg')
+                return jsonify({'error': 'All TTS engines failed — check server logs'}), 500
+
+            return Response(
+                audio_data,
+                mimetype=content_type,
+                headers={
+                    'Content-Length': str(len(audio_data)),
+                    'Cache-Control': 'no-cache'
+                }
+            )
         except Exception as e:
+            import traceback
+            print("[/api/speak] Exception:", traceback.format_exc())
             return jsonify({'error': str(e)}), 500
     
     # ============ STATS & INFO ============

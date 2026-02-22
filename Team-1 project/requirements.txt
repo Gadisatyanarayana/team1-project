@@ -9,5 +9,8 @@ python-dotenv==1.0.0
 # Text-to-Speech (audio endpoint)
 gTTS==2.3.2
 
+# Server-side Speech-to-Text (audio translator — works where Chrome Web Speech is blocked)
+SpeechRecognition==3.10.4
+
 # Production WSGI server (local / Docker; not used by Vercel)
 gunicorn==21.2.0

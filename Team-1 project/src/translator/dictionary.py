@@ -36,6 +36,29 @@ class Dictionary:
         text = ' '.join(text.strip().split())
         return text
     
+    def _is_valid_santali(self, text: str) -> bool:
+        """Return False for garbled/corrupted Santali entries.
+
+        Garbage entries (produced by broken transliteration of proper nouns)
+        look like: "ᱞᱧ ᱞᱞ ᱢ ᱳ ᱱᱞ ᱠᱳ ᱢ ᱰᱨᱠᱪᱢ ᱣ ᱯ"
+        — many space-separated single Ol Chiki characters.
+
+        Good entries look like: "ᱟᱜᱡᱪᱷᱛᱩ ᱤᱱ ᱾" or "ᱡᱚᱦᱟᱨ"
+        """
+        if not text:
+            return False
+        # Any ASCII a-z / A-Z in a Santali translation = definitely garbage
+        for ch in text:
+            if ch.isascii() and ch.isalpha():
+                return False
+        tokens = text.split()
+        if len(tokens) > 4:
+            single_char = sum(1 for t in tokens if len(t) == 1)
+            # If more than half the tokens are isolated single characters → garbled
+            if single_char / len(tokens) > 0.50:
+                return False
+        return True
+
     def load_dictionary(self):
         """Load dictionary from CSV file with optimization"""
         if os.path.exists(self.dictionary_path):
@@ -58,6 +81,9 @@ class Dictionary:
                             # only in the letter-level transliteration map, NOT as word
                             # lookups (they corrupt multi-word lookups: एक→long junk, नदी→spaced)
                             if len(hindi) == 1:
+                                continue
+                            # Skip garbled/corrupted Santali values
+                            if not self._is_valid_santali(santali):
                                 continue
                             # Normalize
                             hindi = self._normalize_text(hindi)

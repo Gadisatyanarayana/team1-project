@@ -3,17 +3,18 @@ Ol Chiki character pronunciation and transliteration for TTS
 """
 
 # Ol Chiki to phonetic spelling for text-to-speech
+# NOTE: No duplicate keys — Python dicts keep only the last value for a repeated key,
+# which caused 'ᱤ' (vowel-i = 'ee') to be silently overwritten to 'ya'.
 OLCHIKI_PHONETIC_MAP = {
     # Vowels
     'ᱚ': 'oh',
     'ᱟ': 'ah',
-    'ᱤ': 'ee',
+    'ᱤ': 'ee',    # Ol Chiki Letter Vowel I  (U+1C24)
     'ᱦ': 'ha',
     'ᱩ': 'oo',
     'ᱮ': 'ay',
-    'ᱰ': 'da',
+    'ᱰ': 'do',
     'ᱳ': 'o',
-    
     # Consonants
     'ᱠ': 'ka',
     'ᱜ': 'ga',
@@ -21,7 +22,6 @@ OLCHIKI_PHONETIC_MAP = {
     'ᱞ': 'la',
     'ᱢ': 'ma',
     'ᱣ': 'wa',
-    'ᱤ': 'ya',
     'ᱨ': 'ra',
     'ᱪ': 'cha',
     'ᱫ': 'da',
@@ -30,16 +30,17 @@ OLCHIKI_PHONETIC_MAP = {
     'ᱱ': 'na',
     'ᱥ': 'sa',
     'ᱧ': 'nya',
-    'ᱨ': 'ra',
     'ᱲ': 'rra',
-    'ᱳ': 'o',
     'ᱴ': 'ta',
     'ᱵ': 'ba',
     'ᱶ': 'va',
-    'ᱷ': 'ha',
-    'ᱸ': 'um',
-    'ᱹ': 'anusvara',
-    'ᱺ': 'visarga',
+    'ᱷ': 'h',
+    'ᱸ': 'n',
+    'ᱹ': '',
+    'ᱺ': '',
+    # Ol Chiki digits
+    '᱐': 'zero', '᱑': 'one', '᱒': 'two', '᱓': 'three', '᱔': 'four',
+    '᱕': 'five', '᱖': 'six', '᱗': 'seven', '᱘': 'eight', '᱙': 'nine',
 }
 
 # Ol Chiki to Latin/Devanagari transliteration

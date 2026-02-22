@@ -1,58 +1,65 @@
 """
 Audio generation for text-to-speech
 Supports multiple TTS engines with Ol Chiki transliteration
+Returns (audio_bytes, content_type) so callers can set the correct HTTP header.
 """
 
 import os
+import math
+import struct
 import tempfile
 from io import BytesIO
 from .olchiki_tts import prepare_text_for_tts, is_olchiki_text
 
 def generate_speech_audio(text, language='hi'):
-    """Generate speech audio using available TTS engines
-    
+    """Generate speech audio using available TTS engines.
+
     Args:
         text: Text to speak
         language: Language code ('hi' for Hindi, 'sat' for Santali)
-    
+
     Returns:
-        bytes: Audio data in MP3 or WAV format
+        tuple: (audio_bytes, content_type_string) or (None, None) on failure
     """
     if not text or not text.strip():
-        print("⚠ Empty text provided for TTS")
-        return None
-    
-    # Prepare text for TTS (transliterate Ol Chiki if needed)
+        print("[TTS] Empty text — nothing to speak")
+        return None, None
+
+    # Transliterate Ol Chiki to phonetic Latin so gTTS/pyttsx3 can pronounce it
     if is_olchiki_text(text):
-        print(f"🔤 Ol Chiki text detected, transliterating for TTS...")
+        print("[TTS] Ol Chiki detected — transliterating to phonetic text")
         tts_text = prepare_text_for_tts(text)
-        print(f"📝 TTS will speak: {tts_text}")
+        print("[TTS] Will speak: {}".format(tts_text))
+        language = 'hi'  # use Hindi engine for phonetic Santali
     else:
         tts_text = text
-    
-    print(f"🎤 Generating speech for: {text[:30]}... (lang={language})")
-    
-    # Try gTTS (Google Text-to-Speech) first - works best
+
+    print("[TTS] Generating speech for: {} (lang={})".format(tts_text[:40], language))
+
+    # 1) gTTS — best quality, needs internet
     try:
         audio_data = _generate_with_gtts(tts_text, language)
         if audio_data:
-            print(f"✓ gTTS generated {len(audio_data)} bytes of audio")
-            return audio_data
+            print("[TTS] gTTS OK — {} bytes (MP3)".format(len(audio_data)))
+            return audio_data, 'audio/mpeg'
     except Exception as e:
-        print(f"⚠ gTTS failed: {e}")
-    
-    # Fallback to pyttsx3
+        print("[TTS] gTTS failed: {}".format(e))
+
+    # 2) pyttsx3 — offline fallback
     try:
         audio_data = _generate_with_pyttsx3(tts_text, language)
         if audio_data:
-            print(f"✓ pyttsx3 generated {len(audio_data)} bytes of audio")
-            return audio_data
+            print("[TTS] pyttsx3 OK — {} bytes (WAV)".format(len(audio_data)))
+            return audio_data, 'audio/wav'
     except Exception as e:
-        print(f"⚠ pyttsx3 failed: {e}")
-    
-    # Last resort - return simple tone to at least give feedback
-    print("⚠ Falling back to simple tone generator")
-    return generate_simple_tone()
+        print("[TTS] pyttsx3 failed: {}".format(e))
+
+    # 3) Pure-Python silent-tone WAV — always works, no dependencies
+    print("[TTS] Using built-in tone fallback (WAV)")
+    tone = generate_simple_tone()
+    if tone:
+        return tone, 'audio/wav'
+    return None, None
 
 
 def _generate_with_gtts(text, language='hi'):
@@ -156,30 +163,45 @@ def _generate_with_pyttsx3(text, language='hi'):
 
 
 def generate_simple_tone():
-    """Generate a simple beep tone for testing"""
+    """Generate a simple 440 Hz beep tone using only the Python standard library.
+    No numpy, no scipy — always available.
+    Returns raw WAV bytes.
+    """
     try:
-        import numpy as np
-        from scipy.io import wavfile
-        import tempfile
-        
-        # Generate beep
         sample_rate = 22050
-        duration = 0.5  # seconds
-        frequency = 1000  # Hz
-        
-        t = np.linspace(0, duration, int(sample_rate * duration))
-        wave = np.sin(2 * np.pi * frequency * t) * 0.3  # Sine wave
-        
-        # Convert to 16-bit PCM
-        audio_data = np.int16(wave * 32767)
-        
-        # Save to BytesIO
-        output = BytesIO()
-        wavfile.write(output, sample_rate, audio_data)
-        output.seek(0)
-        
-        return output.read()
-    
+        duration    = 0.5      # seconds
+        frequency   = 440      # Hz  (concert A)
+        amplitude   = 0.25     # 0-1
+        num_samples = int(sample_rate * duration)
+
+        # Build 16-bit mono PCM samples
+        samples = bytearray()
+        for i in range(num_samples):
+            val = int(amplitude * 32767 *
+                      math.sin(2 * math.pi * frequency * i / sample_rate))
+            # clamp to int16 range
+            val = max(-32768, min(32767, val))
+            samples += struct.pack('<h', val)
+
+        data_size = len(samples)
+        # Standard PCM WAV header (44 bytes)
+        header = struct.pack(
+            '<4sI4s4sIHHIIHH4sI',
+            b'RIFF',
+            36 + data_size,   # overall file size - 8
+            b'WAVE',
+            b'fmt ',
+            16,               # subchunk1 size
+            1,                # PCM audio format
+            1,                # mono
+            sample_rate,
+            sample_rate * 2,  # byte rate (1 channel * 2 bytes)
+            2,                # block align
+            16,               # bits per sample
+            b'data',
+            data_size
+        )
+        return bytes(header) + bytes(samples)
     except Exception as e:
-        print(f"Error generating tone: {e}")
+        print("[TTS] Tone generation failed: {}".format(e))
         return None
