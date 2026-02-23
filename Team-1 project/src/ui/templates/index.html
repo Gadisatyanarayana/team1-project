@@ -55,6 +55,10 @@
       --swap-stroke: #f59e0b;
       --spk-c:   #fbbf24;
       --header-border: rgba(245,158,11,.16);
+      --header-glass-bg:   rgba(13, 16, 26, 0.45);
+      --header-glass-top:  rgba(251, 191, 36, 0.18);
+      --header-glass-edge: rgba(245, 158, 11, 0.22);
+      --header-glass-shadow: 0 8px 32px rgba(0,0,0,.55), 0 1px 0 rgba(251,191,36,.10);
     }
 
     /* ═══════════════════════════════════════════════════
@@ -106,6 +110,10 @@
       --swap-stroke: #0d9488;
       --spk-c:   #0d9488;
       --header-border: rgba(13,148,136,.18);
+      --header-glass-bg:   rgba(248, 248, 242, 0.40);
+      --header-glass-top:  rgba(255, 255, 255, 0.75);
+      --header-glass-edge: rgba(13, 148, 136, 0.22);
+      --header-glass-shadow: 0 8px 32px rgba(0,0,0,.12), 0 1px 0 rgba(255,255,255,.80);
     }
 
     /* ═══════════════════════════════════════════════════
@@ -218,13 +226,30 @@
     .header {
       display:flex; align-items:center; justify-content:space-between;
       padding:14px 24px;
-      background: var(--surface);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border-bottom: none;
-      box-shadow: 0 1px 0 var(--header-border), 0 4px 16px rgba(0,0,0,.12);
-      transition: background .5s, box-shadow .5s;
+      background: var(--header-glass-bg);
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      border-bottom: 1px solid var(--header-glass-edge);
+      /* luminous top highlight line */
+      border-top: 1px solid var(--header-glass-top);
+      box-shadow: var(--header-glass-shadow);
+      transition: background .5s, box-shadow .5s, border-color .5s;
       min-height: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    /* soft inner shimmer sweep */
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        105deg,
+        var(--header-glass-top) 0%,
+        transparent 55%
+      );
+      opacity: .18;
+      pointer-events: none;
     }
 
     .header-left  { display:flex; align-items:center; gap:12px; flex-shrink:0; }
@@ -232,14 +257,10 @@
 
     /* LOGO */
     .logo-box {
-      width:44px; height:44px; border-radius:13px; flex-shrink:0;
-      background: var(--logo-bg);
+      width:44px; height:44px; flex-shrink:0;
       display:flex; align-items:center; justify-content:center;
-      box-shadow: var(--logo-glow);
-      transition: background .5s, box-shadow .5s;
-      position:relative;
     }
-    .logo-box svg { width:24px; height:24px; fill:none; stroke:#fff; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+    .logo-box svg { width:28px; height:28px; fill:none; stroke:var(--accent2); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 
     .header-brand     { flex-shrink:0; }
     .header-brand h1  { font-size:17px; font-weight:700; color:var(--text-hi); letter-spacing:-.4px; line-height:1.15; white-space:nowrap; transition:color .5s; }
@@ -247,14 +268,14 @@
 
     /* THEME TOGGLE */
     .theme-btn {
-      width:34px; height:34px; border-radius:10px;
-      background: var(--toggle-bg); border:1px solid var(--toggle-border);
+      width:34px; height:34px;
+      background: transparent; border:none;
       display:flex; align-items:center; justify-content:center;
       cursor:pointer; flex-shrink:0;
-      transition: background .3s, border-color .3s, transform .25s;
+      transition: transform .25s, opacity .25s;
     }
-    .theme-btn:hover { transform:rotate(22deg) scale(1.1); }
-    .theme-btn svg { width:16px; height:16px; fill:none; stroke:var(--toggle-icon); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:stroke .5s; }
+    .theme-btn:hover { transform:rotate(22deg) scale(1.15); opacity:.8; }
+    .theme-btn svg { width:18px; height:18px; fill:none; stroke:var(--accent2); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; transition:stroke .5s; }
 
     /* MENU BTN */
     .menu-btn {
@@ -335,16 +356,20 @@
     .dot.a { background:var(--accent1); } .dot.b { background:var(--accent2); } .dot.c { background:var(--accent3); }
 
     /* Shared panel */
-    .ph { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
-    .back-btn {
-      width:34px; height:34px; border-radius:10px;
-      background:var(--accent-dim); border:1px solid var(--border);
-      display:flex; align-items:center; justify-content:center;
-      cursor:pointer; transition:background .15s;
+    .ph {
+      display:flex; align-items:center; gap:12px;
+      margin-bottom:22px; padding-top:4px;
     }
-    .back-btn:hover { background:var(--surface2); }
-    .back-btn svg { width:16px; height:16px; fill:none; stroke:var(--back-stroke); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; transition:stroke .5s; }
-    .ptitle { font-size:17px; font-weight:700; color:var(--text-hi); letter-spacing:-.3px; transition:color .5s; }
+    .back-btn {
+      width:34px; height:34px; border-radius:50%;
+      background:transparent; border:none;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; transition:background .18s, transform .18s;
+      flex-shrink:0;
+    }
+    .back-btn:hover { background:var(--accent-dim); transform:translateX(-2px); }
+    .back-btn svg { width:18px; height:18px; fill:none; stroke:var(--accent2); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+    .ptitle { font-size:18px; font-weight:800; color:var(--text-hi); letter-spacing:-.4px; transition:color .5s; }
 
     .card {
       background: var(--card-bg);
@@ -552,7 +577,7 @@
       margin-top:8px; display:none; line-height:1.9; transition:background .5s;
     }
     .tl-btn.tl-on ~ .tl-cheatsheet { display:block; }
-</style>
+    </style>
 </head>
 <body>
 <canvas id="wavy-bg-canvas" aria-hidden="true"></canvas>
@@ -568,7 +593,7 @@
   <div class="nav-shell">
     <header class="header">
       <div class="header-left">
-        <div class="logo-box">
+        <div class="logo-box" onclick="openAbout()" role="button" aria-label="About">
           <!-- Two speech bubbles = translation / language bridge -->
           <svg viewBox="0 0 24 24">
             <!-- Back bubble (Hindi) -->
@@ -1435,5 +1460,903 @@
   raf = requestAnimationFrame(render);
 })();
 </script>
+
+<!-- ══════════════════════════════════════════════
+     ABOUT MODAL  — Aceternity / shadcn effects
+══════════════════════════════════════════════ -->
+<style>
+  /* ─── KEYFRAMES ─────────────────────────────── */
+  @keyframes aboutSlideUp {
+    from { opacity:0; transform:translateY(28px) scale(.97); }
+    to   { opacity:1; transform:translateY(0)    scale(1);  }
+  }
+  @keyframes statPop {
+    0%   { opacity:0; transform:translateY(18px) scale(.88); }
+    65%  { transform:translateY(-4px) scale(1.05); }
+    100% { opacity:1; transform:translateY(0)    scale(1);  }
+  }
+  @keyframes cardSlideL {
+    from { opacity:0; transform:translateX(-20px); }
+    to   { opacity:1; transform:translateX(0);     }
+  }
+  @keyframes cardSlideR {
+    from { opacity:0; transform:translateX(20px); }
+    to   { opacity:1; transform:translateX(0);    }
+  }
+  /* Aceternity spinning gradient border */
+  @keyframes spinBorder {
+    to { --ab-angle: 360deg; }
+  }
+  /* shimmer sweep */
+  @keyframes shimmerSweep {
+    0%   { background-position: -200% center; }
+    100% { background-position:  200% center; }
+  }
+  /* pulse glow for role dot */
+  @keyframes pulseDot {
+    0%,100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+    50%     { box-shadow: 0 0 0 5px transparent; }
+  }
+  /* grid-line drift */
+  @keyframes gridDrift {
+    from { background-position: 0 0; }
+    to   { background-position: 28px 28px; }
+  }
+  /* typewriter cursor blink */
+  @keyframes cursorBlink {
+    0%,100% { opacity:1; } 50% { opacity:0; }
+  }
+  /* avatar ring rotate */
+  @keyframes ringRotate {
+    to { transform: rotate(360deg); }
+  }
+  /* left-bar glow travel */
+  @keyframes barTravel {
+    0%   { background-position: 0% 0%; }
+    100% { background-position: 0% 200%; }
+  }
+  /* scan-line sweep */
+  @keyframes scanLine {
+    0%   { top:-10%; opacity:.55; }
+    100% { top:110%; opacity:0;   }
+  }
+  /* word shimmer for strong */
+  @keyframes wordShimmer {
+    0%   { background-position:-200% center; }
+    100% { background-position: 200% center; }
+  }
+  /* section title underline expand */
+  @keyframes lineExpand {
+    from { transform:scaleX(0); opacity:0; }
+    to   { transform:scaleX(1); opacity:.5; }
+  }
+  /* floating orb */
+  @keyframes orbFloat {
+    0%,100% { transform:translateY(0)   scale(1);    opacity:.18; }
+    50%     { transform:translateY(-18px) scale(1.08); opacity:.28; }
+  }
+  /* aurora layer breathe */
+  @keyframes auroraShift {
+    0%,100% { opacity:1;  transform:scale(1);    }
+    33%     { opacity:.7; transform:scale(1.06) translate(1%,  1%); }
+    66%     { opacity:.9; transform:scale(.97)  translate(-1%,-1%); }
+  }
+  /* second aurora orb drift */
+  @keyframes auroraDrift {
+    0%,100% { transform:translate(0,0)    scale(1);   opacity:.10; }
+    50%     { transform:translate(4%,3%)  scale(1.12); opacity:.18; }
+  }
+  /* modal bg mesh drift */
+  @keyframes bgMeshDrift {
+    0%   { background-position: 0px 0px; }
+    100% { background-position: 48px 48px; }
+  }
+
+  /* ─── OVERLAY ───────────────────────────────── */
+  .about-overlay {
+    display:none;
+    position:fixed; inset:0; z-index:9999;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 40%, rgba(20,18,48,.85) 0%, rgba(0,0,0,.80) 100%);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    align-items:center; justify-content:center;
+    padding:16px;
+    opacity:0;
+    transition: opacity .4s cubic-bezier(.4,0,.2,1);
+  }
+  .about-overlay.open { display:flex; opacity:1; pointer-events:all; }
+
+  /* ─── DIALOG SHELL ──────────────────────────── */
+  .about-modal {
+    width:100%; max-width:700px; max-height:90vh;
+    /* Aceternity-style: deep crystalline midnight gradient */
+    background:
+      linear-gradient(155deg,
+        #05071a 0%,
+        #0a0d26 30%,
+        #0e1230 58%,
+        #060818 100%);
+    border-radius:26px;
+    /* shadcn glowing gradient border trick */
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    outline: 1px solid rgba(99,102,241,.18);
+    box-shadow:
+      0 0 0 1px rgba(139,92,246,.12),
+      0 32px 90px rgba(0,0,0,.80),
+      0 0 100px -20px var(--accent-glow),
+      inset 0 1px 0 rgba(255,255,255,.06);
+    overflow:hidden;
+    transform: translateY(48px) scale(.93) rotateX(4deg);
+    transform-origin: center bottom;
+    opacity:0;
+    transition:
+      transform .45s cubic-bezier(.34,1.35,.64,1),
+      opacity   .38s ease;
+    display:flex; flex-direction:column;
+    position:relative;
+  }
+  /* Light theme override — keep readable */
+  [data-theme="light"] .about-modal {
+    background: linear-gradient(155deg,#f5f7ff 0%,#eef0fa 45%,#f0f2ff 100%);
+    outline: 1px solid rgba(99,102,241,.20);
+    box-shadow:
+      0 0 0 1px rgba(139,92,246,.12),
+      0 28px 72px rgba(0,0,0,.18),
+      0 0 60px -20px var(--accent-glow),
+      inset 0 1px 0 rgba(255,255,255,.7);
+  }
+  /* Aceternity dot-grid background */
+  .about-modal::after {
+    content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      radial-gradient(circle, rgba(139,92,246,.22) 1px, transparent 1px);
+    background-size: 28px 28px;
+    animation: bgMeshDrift 8s linear infinite;
+    opacity:.55;
+  }
+  /* multi-layer aurora glow */
+  .about-modal::before {
+    content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
+    background:
+      radial-gradient(ellipse 110% 55% at 50% -10%,  rgba(99,102,241,.28) 0%, transparent 60%),
+      radial-gradient(ellipse  55% 40% at  8% 105%,  rgba(251,191,36,.10) 0%, transparent 55%),
+      radial-gradient(ellipse  50% 38% at 92% 100%,  rgba(167,139,250,.12) 0%, transparent 55%),
+      radial-gradient(ellipse  40% 30% at 50%  50%,  rgba(99,102,241,.04) 0%, transparent 70%);
+    animation: auroraShift 9s ease-in-out infinite;
+  }
+  [data-theme="light"] .about-modal::before {
+    background:
+      radial-gradient(ellipse 110% 55% at 50% -10%,  rgba(99,102,241,.14) 0%, transparent 60%),
+      radial-gradient(ellipse  55% 40% at  8% 105%,  rgba(251,191,36,.07) 0%, transparent 55%),
+      radial-gradient(ellipse  50% 38% at 92% 100%,  rgba(167,139,250,.09) 0%, transparent 55%);
+  }
+  [data-theme="light"] .about-modal::after {
+    background-image: radial-gradient(circle, rgba(99,102,241,.20) 1px, transparent 1px);
+    opacity:.35;
+  }
+  .about-overlay.open .about-modal { transform:translateY(0) scale(1) rotateX(0); opacity:1; }
+
+  /* stagger sections */
+  .about-overlay.open .ab-animate {
+    animation: aboutSlideUp .5s cubic-bezier(.34,1.3,.64,1) both;
+  }
+  .about-overlay.open .ab-animate:nth-child(1) { animation-delay:.12s; }
+  .about-overlay.open .ab-animate:nth-child(2) { animation-delay:.21s; }
+  .about-overlay.open .ab-animate:nth-child(3) { animation-delay:.30s; }
+  .about-overlay.open .ab-animate:nth-child(4) { animation-delay:.39s; }
+  .about-overlay.open .ab-animate:nth-child(5) { animation-delay:.48s; }
+
+  /* stat pop */
+  .about-overlay.open .astat { animation: statPop .55s cubic-bezier(.34,1.5,.64,1) both; }
+  .about-overlay.open .astat:nth-child(1) { animation-delay:.25s; }
+  .about-overlay.open .astat:nth-child(2) { animation-delay:.34s; }
+  .about-overlay.open .astat:nth-child(3) { animation-delay:.43s; }
+  .about-overlay.open .astat:nth-child(4) { animation-delay:.52s; }
+
+  /* lead / team cards */
+  .about-overlay.open .team-lead-card { animation: aboutSlideUp .5s cubic-bezier(.34,1.3,.64,1) .54s both; }
+  .about-overlay.open .team-card { animation: cardSlideL .42s cubic-bezier(.34,1.3,.64,1) both; }
+  .about-overlay.open .team-card:nth-child(1) { animation-delay:.60s; }
+  .about-overlay.open .team-card:nth-child(2) { animation-delay:.66s; animation-name:cardSlideR; }
+  .about-overlay.open .team-card:nth-child(3) { animation-delay:.72s; }
+  .about-overlay.open .team-card:nth-child(4) { animation-delay:.78s; animation-name:cardSlideR; }
+
+  /* ─── MODAL HEADER ──────────────────────────── */
+  .about-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 22px 15px;
+    border-bottom:1px solid var(--border2);
+    flex-shrink:0; position:relative; z-index:2;
+    background: linear-gradient(to bottom,
+      rgba(99,102,241,.16) 0%,
+      rgba(99,102,241,.06) 60%,
+      transparent 100%);
+  }
+  /* floating orbs in header */
+  .about-header::before,
+  .about-header::after {
+    content:''; position:absolute; border-radius:50%; pointer-events:none;
+  }
+  .about-header::before {
+    width:80px; height:80px; top:-30px; right:60px;
+    background:var(--accent-glow);
+    animation: orbFloat 4s ease-in-out infinite;
+    filter:blur(18px);
+  }
+  .about-header::after {
+    width:50px; height:50px; top:-10px; right:140px;
+    background:var(--accent-dim);
+    animation: orbFloat 5.5s ease-in-out infinite reverse;
+    filter:blur(12px);
+  }
+  .about-header-left { display:flex; align-items:center; gap:13px; position:relative; z-index:2; }
+  .about-icon {
+    width:42px; height:42px; border-radius:13px; flex-shrink:0;
+    background:var(--btn-grad);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 4px 16px var(--accent-glow);
+    animation: aboutSlideUp .5s cubic-bezier(.34,1.5,.64,1) .08s both;
+  }
+  .about-icon svg { width:22px; height:22px; fill:none; stroke:#fff; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* Typewriter title */
+  .about-title {
+    font-size:15px; font-weight:800; letter-spacing:-.4px;
+    background: linear-gradient(90deg, var(--text-hi) 0%, var(--accent2) 50%, var(--text-hi) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+    animation: shimmerSweep 3.5s linear infinite;
+  }
+  .about-sub-title { font-size:11px; color:var(--text-mid); margin-top:2px; }
+
+  /* shadcn shimmer badge */
+  .about-badge {
+    font-size:10px; font-weight:800; letter-spacing:.6px; text-transform:uppercase;
+    color:#fff; border-radius:20px; padding:3px 11px;
+    background: linear-gradient(90deg, var(--accent1) 0%, var(--accent3) 40%, var(--accent1) 100%);
+    background-size: 200% auto;
+    box-shadow: 0 2px 12px var(--accent-glow);
+    animation: shimmerSweep 2.5s linear infinite;
+  }
+  .about-close {
+    width:32px; height:32px; border:1px solid var(--border);
+    background:transparent; cursor:pointer; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-lo); font-size:16px; line-height:1; position:relative; z-index:2;
+    transition: color .2s, background .2s, border-color .2s, transform .2s;
+  }
+  .about-close:hover { background:var(--accent-dim); color:var(--text-hi); border-color:var(--accent2); transform:rotate(90deg); }
+
+  /* ─── BODY ──────────────────────────────────── */
+  .about-body {
+    overflow-y:auto; padding:20px 22px 28px;
+    display:flex; flex-direction:column; gap:22px;
+    position:relative; z-index:2;
+  }
+  .about-body::-webkit-scrollbar { width:4px; }
+  .about-body::-webkit-scrollbar-track { background:transparent; }
+  .about-body::-webkit-scrollbar-thumb { background:var(--accent2); border-radius:4px; opacity:.5; }
+
+  /* ─── SECTION TITLE (gradient + line) ──────── */
+  .ab-section-title {
+    font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px;
+    margin-bottom:13px;
+    background: linear-gradient(90deg, var(--accent2) 0%, var(--accent3) 50%, var(--accent2) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+    animation: shimmerSweep 4s linear infinite;
+    display:flex; align-items:center; gap:8px;
+    position:relative;
+  }
+  .ab-section-title::after {
+    content:''; flex:1; height:1px;
+    background:linear-gradient(90deg, var(--accent2), transparent);
+    transform-origin:left;
+    opacity:0;
+  }
+  /* trigger line expand when parent section enters viewport (via .open stagger) */
+  .about-overlay.open .ab-section-title::after {
+    animation: lineExpand .7s cubic-bezier(.4,0,.2,1) .55s both;
+  }
+
+  /* ─── STAT CARDS (Aceternity glow border) ── */
+  .about-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  @media(max-width:480px){ .about-stats { grid-template-columns:repeat(2,1fr); } }
+  .astat {
+    position:relative; overflow:hidden;
+    border-radius:16px; padding:15px 12px; text-align:center;
+    /* shadcn glassy card */
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border:1px solid rgba(139,92,246,.18);
+    background-clip:padding-box;
+    transition: transform .22s, box-shadow .22s, border-color .22s;
+    cursor:default;
+  }
+  [data-theme="light"] .astat {
+    background: rgba(255,255,255,.55);
+    border:1px solid rgba(99,102,241,.18);
+  }
+  /* animated gradient border via outline trick */
+  .astat::before {
+    content:''; position:absolute; inset:-1px; border-radius:17px; z-index:-1;
+    background: conic-gradient(from var(--ab-angle,0deg), var(--accent1), var(--accent3), var(--accent1));
+    opacity:0; transition:opacity .3s;
+  }
+  .astat:hover { transform:translateY(-4px); box-shadow:0 10px 28px var(--accent-glow); }
+  .astat:hover::before { opacity:1; animation: spinBorder 2s linear infinite; }
+  /* shimmer sweep */
+  .astat::after {
+    content:''; position:absolute;
+    top:0; left:-80%; width:60%; height:100%;
+    background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.12) 50%,transparent 60%);
+    transform:skewX(-15deg); transition:left .55s ease;
+  }
+  .astat:hover::after { left:130%; }
+  .astat-icon { font-size:22px; margin-bottom:5px; }
+  .astat-val {
+    font-size:22px; font-weight:900; line-height:1;
+    background:linear-gradient(135deg, var(--accent2), var(--accent3));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .astat-lbl { font-size:10.5px; color:var(--text-mid); margin-top:5px; font-weight:600; letter-spacing:.2px; }
+
+  /* ─── DESCRIPTION BLOCK ─────────────────────── */
+  .about-desc {
+    font-size:13px; color:var(--text-hi); line-height:1.85;
+    background: rgba(255,255,255,.035);
+    backdrop-filter: blur(8px) saturate(130%);
+    -webkit-backdrop-filter: blur(8px) saturate(130%);
+    border:1px solid rgba(139,92,246,.16);
+    border-radius:16px; padding:16px 18px;
+    position:relative; overflow:hidden;
+  }
+  [data-theme="light"] .about-desc {
+    background: rgba(255,255,255,.60);
+    border:1px solid rgba(99,102,241,.18);
+  }
+  /* animated left accent bar — travelling glow */
+  .about-desc::before {
+    content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+    background: linear-gradient(
+      to bottom,
+      var(--accent2) 0%,
+      var(--accent3) 30%,
+      rgba(255,255,255,.9) 50%,
+      var(--accent3) 70%,
+      var(--accent2) 100%
+    );
+    background-size: 100% 200%;
+    border-radius:3px 0 0 3px;
+    animation: barTravel 3s linear infinite;
+  }
+  /* scan-line pseudo line sweeping top→bottom on hover */
+  .about-desc::after {
+    content:''; position:absolute; left:0; right:0; height:2px;
+    background: linear-gradient(90deg, transparent, rgba(167,139,250,.35), rgba(99,102,241,.45), rgba(167,139,250,.35), transparent);
+    top:-10%; pointer-events:none;
+    opacity:0;
+  }
+  .about-desc:hover::after {
+    animation: scanLine 1.2s cubic-bezier(.4,0,.6,1) both;
+  }
+  .about-desc:hover {
+    border-color: rgba(139,92,246,.40);
+    box-shadow: 0 4px 22px rgba(99,102,241,.12), inset 0 0 28px rgba(99,102,241,.04);
+    transition: border-color .3s, box-shadow .3s;
+  }
+  /* strong keyword shimmer */
+  .about-desc strong {
+    font-weight:700;
+    background: linear-gradient(90deg, var(--accent2) 0%, var(--accent3) 40%, #fff 55%, var(--accent3) 70%, var(--accent2) 100%);
+    background-size: 250% auto;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+    animation: wordShimmer 4.5s linear infinite;
+  }
+  [data-theme="light"] .about-desc strong {
+    background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 40%, #a78bfa 55%, #7c3aed 70%, #4f46e5 100%);
+    background-size:250% auto;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+
+  /* ─── INSTITUTE STRIP ───────────────────────── */
+  .about-institute {
+    display:flex; align-items:center; gap:14px;
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border:1px solid rgba(139,92,246,.20);
+    border-radius:16px; padding:15px 17px;
+    position:relative; overflow:hidden;
+    transition: border-color .25s, box-shadow .25s;
+  }
+  [data-theme="light"] .about-institute {
+    background: rgba(255,255,255,.60);
+    border:1px solid rgba(99,102,241,.22);
+  }
+  .about-institute:hover { border-color:var(--accent2); box-shadow:0 6px 24px var(--accent-glow); }
+  .about-institute::before {
+    content:''; position:absolute; right:-40px; top:-40px;
+    width:130px; height:130px; border-radius:50%;
+    background:radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    filter:blur(10px);
+  }
+  .about-inst-icon {
+    font-size:30px; flex-shrink:0;
+    filter:drop-shadow(0 2px 8px var(--accent-glow));
+    animation: orbFloat 3.5s ease-in-out infinite;
+  }
+  /* institute name — shimmer gradient text */
+  .about-inst-name {
+    font-size:14px; font-weight:800; letter-spacing:-.2px;
+    background: linear-gradient(90deg, var(--text-hi) 0%, var(--accent2) 40%, var(--accent3) 60%, var(--text-hi) 100%);
+    background-size:250% auto;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+    animation: wordShimmer 5s linear infinite;
+  }
+  .about-inst-sub {
+    font-size:11.5px; color:var(--text-mid); margin-top:3px; line-height:1.65; font-weight:500;
+    /* fade-in on open */
+    opacity:0;
+  }
+  .about-overlay.open .about-inst-sub {
+    animation: aboutSlideUp .5s ease .62s both;
+    opacity:1;
+  }
+
+  /* ─── TEAM LEAD CARD ────────────────────────── */
+  .team-lead-card {
+    position:relative; overflow:hidden;
+    border-radius:20px; padding:20px 20px;
+    background: rgba(255,255,255,.05);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border:1px solid rgba(139,92,246,.24);
+    display:flex; align-items:flex-start; gap:16px;
+    transition: box-shadow .3s, border-color .3s;
+  }
+  [data-theme="light"] .team-lead-card {
+    background: rgba(255,255,255,.65);
+    border:1px solid rgba(99,102,241,.25);
+  }
+  .team-lead-card::before {
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse 85% 65% at 5% 50%, var(--accent-glow) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 50% at 95% 10%, var(--accent-dim) 0%, transparent 70%);
+    opacity:.7;
+  }
+  .team-lead-card:hover {
+    border-color:var(--accent2);
+    box-shadow: 0 0 0 1px var(--accent2), 0 12px 40px var(--accent-glow);
+  }
+
+  /* ─── TEAM GRID ─────────────────────────────── */
+  .team-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media(max-width:500px){ .team-grid { grid-template-columns:1fr; } }
+
+  /* ─── TEAM CARD (Aceternity spotlight) ──────── */
+  .team-card {
+    position:relative; overflow:hidden;
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border:1px solid rgba(139,92,246,.16);
+    border-radius:18px; padding:16px 15px 14px;
+    transition: border-color .25s, box-shadow .25s;
+    cursor:default;
+  }
+  [data-theme="light"] .team-card {
+    background: rgba(255,255,255,.58);
+    border:1px solid rgba(99,102,241,.18);
+  }
+  /* animated gradient border outline on hover */
+  .team-card::before {
+    content:''; position:absolute; inset:-1px; border-radius:19px; z-index:0;
+    background: conic-gradient(from var(--ab-angle,0deg), var(--accent1), var(--accent3), var(--accent1));
+    opacity:0; transition:opacity .3s;
+  }
+  .team-card:hover::before { opacity:1; animation: spinBorder 2.5s linear infinite; }
+  .team-card:hover { box-shadow:0 8px 32px var(--accent-glow); }
+  /* inner background covers the outline */
+  .team-card .tc-inner {
+    position:relative; z-index:1;
+    background:var(--surface2); border-radius:17px;
+    padding:0; height:100%;
+  }
+  /* Aceternity spotlight cursor follow */
+  .tc-spotlight {
+    position:absolute; pointer-events:none; z-index:0;
+    width:220px; height:220px; border-radius:50%;
+    background:radial-gradient(circle, var(--accent-glow) 0%, transparent 65%);
+    transform:translate(-50%,-50%); opacity:0;
+    transition:opacity .35s;
+  }
+  .team-card:hover .tc-spotlight { opacity:1; }
+
+  /* ─── AVATARS ───────────────────────────────── */
+  .team-avatar {
+    width:48px; height:48px; border-radius:16px; flex-shrink:0;
+    background:var(--btn-grad);
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px; font-weight:900; color:#fff; letter-spacing:-.5px;
+    position:relative;
+    box-shadow: 0 4px 18px var(--accent-glow);
+  }
+  /* rotating ring */
+  .team-avatar::after {
+    content:''; position:absolute; inset:-3px; border-radius:19px;
+    background:conic-gradient(from 0deg, var(--accent1), var(--accent3), transparent 60%, var(--accent1));
+    z-index:-1; opacity:0; transition:opacity .3s;
+    animation: ringRotate 2s linear infinite;
+  }
+  .team-lead-card:hover .team-avatar::after,
+  .team-card:hover .team-avatar::after { opacity:1; }
+
+  .team-avatar.sm { width:38px; height:38px; border-radius:12px; font-size:13px; }
+  .team-avatar.sm::after { inset:-3px; border-radius:15px; }
+
+  /* ─── TEXT ELEMENTS ─────────────────────────── */
+  .team-info { flex:1; min-width:0; position:relative; z-index:1; }
+  .team-name-row { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+  .team-name {
+    font-size:14px; font-weight:800; color:var(--text-hi); line-height:1.2; letter-spacing:-.2px;
+    position:relative; display:inline-block;
+    transition: color .22s;
+  }
+  /* animated underline on name hover */
+  .team-name::after {
+    content:''; position:absolute; left:0; bottom:-2px; width:0; height:2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent3));
+    border-radius:2px;
+    transition: width .35s cubic-bezier(.4,0,.2,1);
+  }
+  .team-lead-card:hover .team-name::after,
+  .team-card:hover .team-name::after { width:100%; }
+  .lead-chip {
+    font-size:9px; font-weight:900; letter-spacing:.7px; text-transform:uppercase;
+    color:#fff; border-radius:20px; padding:2px 9px; flex-shrink:0;
+    background: linear-gradient(90deg, var(--accent1), var(--accent3), var(--accent1));
+    background-size:200% auto;
+    box-shadow:0 2px 10px var(--accent-glow);
+    animation: shimmerSweep 2.5s linear infinite;
+  }
+  .team-role-row { display:flex; align-items:center; gap:7px; margin-top:5px; }
+  .role-dot {
+    width:7px; height:7px; border-radius:50%;
+    background:var(--accent2); flex-shrink:0;
+    animation: pulseDot 1.8s ease-in-out infinite;
+  }
+  .team-role {
+    font-size:11.5px; font-weight:700;
+    background: linear-gradient(90deg, var(--accent2) 0%, var(--accent3) 50%, var(--accent2) 100%);
+    background-size:200% auto;
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    animation: shimmerSweep 5s linear infinite;
+  }
+
+  /* ─── TASK ITEMS ─────────────────────────────── */
+  .team-tasks {
+    font-size:12px; color:var(--text-hi); margin-top:9px; line-height:1.7;
+    display:flex; flex-direction:column; gap:4px;
+  }
+  .task-item {
+    display:flex; gap:7px; align-items:flex-start;
+    padding:3px 7px; border-radius:8px;
+    transition: background .22s, transform .22s, padding-left .22s;
+    position:relative; overflow:hidden;
+  }
+  /* row hover shine + indent */
+  .task-item:hover {
+    background: rgba(139,92,246,.08);
+    padding-left: 11px;
+    transform: translateX(2px);
+  }
+  [data-theme="light"] .task-item:hover {
+    background: rgba(99,102,241,.07);
+  }
+  /* animated ▸ arrow */
+  .task-item::before {
+    content:'▸'; color:var(--accent2); flex-shrink:0; font-size:9px; margin-top:3px;
+    transition: transform .22s, color .22s;
+  }
+  .task-item:hover::before {
+    transform: translateX(2px) scale(1.3);
+    color:var(--accent3);
+  }
+  /* staggered fade-in on card enter */
+  .about-overlay.open .team-lead-card .task-item,
+  .about-overlay.open .team-card .task-item {
+    animation: aboutSlideUp .4s ease both;
+  }
+  .about-overlay.open .task-item:nth-child(1) { animation-delay:.62s; }
+  .about-overlay.open .task-item:nth-child(2) { animation-delay:.69s; }
+  .about-overlay.open .task-item:nth-child(3) { animation-delay:.76s; }
+  .about-overlay.open .task-item:nth-child(4) { animation-delay:.83s; }
+
+  /* code tag — glassy with shimmer */
+  .task-item code {
+    font-size:10.5px;
+    background: rgba(139,92,246,.14);
+    border:1px solid rgba(139,92,246,.28);
+    border-radius:5px; padding:1px 5px;
+    color:var(--accent2);
+    position:relative; overflow:hidden;
+    transition: background .2s, border-color .2s;
+  }
+  .task-item code::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+    transform:translateX(-100%);
+    transition: transform .5s ease;
+  }
+  .task-item:hover code::after { transform:translateX(100%); }
+  .task-item:hover code {
+    background: rgba(139,92,246,.22);
+    border-color: rgba(167,139,250,.55);
+  }
+  [data-theme="light"] .task-item code {
+    background: rgba(99,102,241,.10);
+    border:1px solid rgba(99,102,241,.30);
+    color:#4f46e5;
+  }
+
+  /* ─── SKILL TAGS (shadcn badge variant) ────── */
+  .skill-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:11px; }
+  .stag {
+    font-size:10px; font-weight:700; letter-spacing:.3px;
+    border:1px solid var(--border); border-radius:9px; padding:3px 9px;
+    color:var(--text-mid); background:var(--surface);
+    transition: all .22s;
+    position:relative; overflow:hidden;
+  }
+  .stag::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent, var(--accent-dim), transparent);
+    transform:translateX(-100%); transition:transform .4s ease;
+    border-radius:9px;
+  }
+  .team-card:hover .stag::after,
+  .team-lead-card:hover .stag::after { transform:translateX(100%); }
+  .team-card:hover .stag,
+  .team-lead-card:hover .stag { border-color:var(--accent2); color:var(--accent2); }
+
+  /* ─── LOGO CLICK ────────────────────────────── */
+  .logo-box { cursor:pointer; }
+  .logo-box:hover svg { opacity:.75; transition:opacity .2s; }
+
+  /* CSS custom property trick for conic-gradient angle */
+  @property --ab-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+</style>
+
+<div class="about-overlay" id="aboutOverlay" style="display:none" onclick="closeAboutOutside(event)">
+  <div class="about-modal" role="dialog" aria-modal="true" aria-label="About the app">
+
+    <!-- ── modal header ── -->
+    <div class="about-header">
+      <div class="about-header-left">
+        <div class="about-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 2h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-3 3v-3H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><line x1="6" y1="6" x2="12" y2="6" stroke-width="1.3" stroke-opacity=".75"/><line x1="6" y1="9" x2="10" y2="9" stroke-width="1.3" stroke-opacity=".75"/><path d="M11 9h8a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-1v3l-3-3h-4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2z"/></svg>
+        </div>
+        <div>
+          <div class="about-title">Hindi – Santali Translator</div>
+          <div class="about-sub-title">App Information &amp; Team</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="about-badge">v1.0</span>
+        <button class="about-close" onclick="closeAbout()" aria-label="Close">&#x2715;</button>
+      </div>
+    </div>
+
+    <!-- ── scrollable body ── -->
+    <div class="about-body">
+
+      <!-- stats -->
+      <div class="ab-animate">
+        <div class="ab-section-title">At a Glance</div>
+        <div class="about-stats">
+          <div class="astat"><div class="astat-icon">📚</div><div class="astat-val">7,600+</div><div class="astat-lbl">Vocabulary Entries</div></div>
+          <div class="astat"><div class="astat-icon">🎯</div><div class="astat-val">~91%</div><div class="astat-lbl">Translation Accuracy</div></div>
+          <div class="astat"><div class="astat-icon">🔤</div><div class="astat-val">3</div><div class="astat-lbl">Script Modes</div></div>
+          <div class="astat"><div class="astat-icon">🤖</div><div class="astat-val">AI</div><div class="astat-lbl">Powered Engine</div></div>
+        </div>
+      </div>
+
+      <!-- about the app -->
+      <div class="ab-animate">
+        <div class="ab-section-title">About the App</div>
+        <div class="about-desc">
+          An <strong>AI-powered Hindi → Santali translator</strong> with native <strong>Ol Chiki</strong> script, transliterated and romanised output. Built on a curated 7,600+ word bilingual dictionary, a bi-gram language model, and a rule-based Ol Chiki converter. Features TTS audio playback, voice input, and batch translation — all running <strong>fully offline</strong>.
+        </div>
+      </div>
+
+      <!-- dataset & training -->
+      <div class="ab-animate">
+        <div class="ab-section-title">Dataset &amp; Training</div>
+        <div class="about-desc">
+          <strong>Corpus:</strong> Hand-curated Hindi–Santali parallel data from linguistic references, tribal education resources &amp; community lists. <strong>Size:</strong> 7,600+ POS-tagged entries. <strong>Model:</strong> Dictionary-first + bi-gram scoring with transliteration fallback — no external neural API. <strong>Accuracy:</strong> ~91% on common vocabulary; lower on rare compound words and dialectal variants.
+        </div>
+      </div>
+
+      <!-- institute -->
+      <div class="ab-animate">
+        <div class="ab-section-title">Guided By</div>
+        <div class="about-institute">
+          <div class="about-inst-icon">🎓</div>
+          <div>
+            <div class="about-inst-name">IIIT Hyderabad</div>
+            <div class="about-inst-sub">Project task assigned under the AI &amp; Digital Inclusion initiative — promoting low-resource language technology for tribal communities in India.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- team -->
+      <div class="ab-animate">
+        <div class="ab-section-title">Development Team — Team 1, KIET</div>
+
+        <!-- lead card (full width) -->
+        <div class="team-lead-card" style="margin-bottom:10px;">
+          <div class="team-avatar">GS</div>
+          <div class="team-info">
+            <div class="team-name-row">
+              <span class="team-name">G SatyaNarayana</span>
+              <span class="lead-chip">★ Lead</span>
+            </div>
+            <div class="team-role-row"><span class="role-dot"></span><span class="team-role">Project Lead &amp; AI / ML Engineer</span></div>
+            <div class="team-tasks">
+              <div class="task-item">Overall project architecture, planning &amp; team coordination</div>
+              <div class="task-item">Translation engine design — dictionary lookup + bi-gram language model</div>
+              <div class="task-item">Python core module development (<code>engine.py</code>, <code>processor.py</code>)</div>
+              <div class="task-item">Model accuracy benchmarking &amp; evaluation pipeline</div>
+            </div>
+            <div class="skill-tags">
+              <span class="stag">Python</span><span class="stag">NLP</span><span class="stag">Language Models</span>
+              <span class="stag">API Design</span><span class="stag">Benchmarking</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-col grid -->
+        <div class="team-grid">
+
+          <!-- VR -->
+          <div class="team-card">
+            <div class="tc-spotlight"></div>
+            <div style="display:flex;gap:11px;align-items:flex-start;">
+              <div class="team-avatar sm">VR</div>
+              <div class="team-info">
+                <div class="team-name-row"><span class="team-name">V RamaKrishna</span></div>
+                <div class="team-role-row"><span class="role-dot"></span><span class="team-role">Backend Developer</span></div>
+                <div class="team-tasks">
+                  <div class="task-item">Flask REST API &amp; route handling</div>
+                  <div class="task-item">TTS integration — gTTS &amp; Ol Chiki audio</div>
+                  <div class="task-item">Batch translation endpoint</div>
+                  <div class="task-item">Vercel &amp; local deployment config</div>
+                </div>
+                <div class="skill-tags">
+                  <span class="stag">Flask</span><span class="stag">Python</span>
+                  <span class="stag">REST API</span><span class="stag">gTTS</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KS -->
+          <div class="team-card">
+            <div class="tc-spotlight"></div>
+            <div style="display:flex;gap:11px;align-items:flex-start;">
+              <div class="team-avatar sm">KS</div>
+              <div class="team-info">
+                <div class="team-name-row"><span class="team-name">K Suryapraveen</span></div>
+                <div class="team-role-row"><span class="role-dot"></span><span class="team-role">Data Engineer</span></div>
+                <div class="team-tasks">
+                  <div class="task-item">Hindi–Santali corpus collection &amp; curation</div>
+                  <div class="task-item">CSV cleaning, deduplication &amp; POS tagging</div>
+                  <div class="task-item">Dictionary module (<code>dictionary.py</code>)</div>
+                  <div class="task-item">Vocabulary expansion to 7,600+ entries</div>
+                </div>
+                <div class="skill-tags">
+                  <span class="stag">Data Curation</span><span class="stag">CSV</span>
+                  <span class="stag">Python</span><span class="stag">Linguistics</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SM -->
+          <div class="team-card">
+            <div class="tc-spotlight"></div>
+            <div style="display:flex;gap:11px;align-items:flex-start;">
+              <div class="team-avatar sm">SM</div>
+              <div class="team-info">
+                <div class="team-name-row"><span class="team-name">S Mahesh</span></div>
+                <div class="team-role-row"><span class="role-dot"></span><span class="team-role">Frontend Developer</span></div>
+                <div class="team-tasks">
+                  <div class="task-item">UI/UX — dark &amp; light theme system</div>
+                  <div class="task-item">Responsive HTML/CSS &amp; glassmorphism</div>
+                  <div class="task-item">JS — modes, voice input, animations</div>
+                  <div class="task-item">Ol Chiki rendering &amp; transliteration toggle</div>
+                </div>
+                <div class="skill-tags">
+                  <span class="stag">HTML/CSS</span><span class="stag">JavaScript</span>
+                  <span class="stag">UI Design</span><span class="stag">Ol Chiki</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GG -->
+          <div class="team-card">
+            <div class="tc-spotlight"></div>
+            <div style="display:flex;gap:11px;align-items:flex-start;">
+              <div class="team-avatar sm">GG</div>
+              <div class="team-info">
+                <div class="team-name-row"><span class="team-name">G Gangaraju</span></div>
+                <div class="team-role-row"><span class="role-dot"></span><span class="team-role">Testing &amp; Documentation</span></div>
+                <div class="team-tasks">
+                  <div class="task-item">Unit &amp; integration tests (<code>tests/</code>)</div>
+                  <div class="task-item">Accuracy evaluation &amp; edge-case testing</div>
+                  <div class="task-item">Launcher scripts — <code>run.bat</code> / <code>run.ps1</code></div>
+                  <div class="task-item">README, SETUP &amp; IMPROVEMENTS docs</div>
+                </div>
+                <div class="skill-tags">
+                  <span class="stag">pytest</span><span class="stag">Testing</span>
+                  <span class="stag">Python</span><span class="stag">Docs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /team-grid -->
+      </div><!-- /team -->
+
+    </div><!-- /about-body -->
+  </div><!-- /about-modal -->
+</div><!-- /about-overlay -->
+
+<script>
+function openAbout() {
+  const ov = document.getElementById('aboutOverlay');
+  ov.style.display = 'flex';
+  // next frame so display:flex renders before CSS transition kicks in
+  requestAnimationFrame(() => ov.classList.add('open'));
+  document.body.style.overflow = 'hidden';
+}
+function closeAbout() {
+  const ov = document.getElementById('aboutOverlay');
+  ov.classList.remove('open');
+  // hide after transition completes (320ms)
+  setTimeout(() => { ov.style.display = 'none'; }, 340);
+  document.body.style.overflow = '';
+}
+function closeAboutOutside(e) {
+  if (e.target === document.getElementById('aboutOverlay')) closeAbout();
+}
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeAbout(); });
+/* Aceternity spotlight follow on team cards */
+document.querySelectorAll('.team-card').forEach(card => {
+  const spot = card.querySelector('.tc-spotlight');
+  if (!spot) return;
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    spot.style.left = (e.clientX - r.left) + 'px';
+    spot.style.top  = (e.clientY - r.top)  + 'px';
+  });
+});
+</script>
+
 </body>
 </html>
